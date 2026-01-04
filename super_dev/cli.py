@@ -513,6 +513,82 @@ class SuperDevCLI:
             help="列出所有领域"
         )
 
+        # design stack - 技术栈最佳实践
+        design_stack_parser = design_subparsers.add_parser(
+            "stack",
+            help="技术栈最佳实践",
+            description="查询技术栈最佳实践、性能优化和设计模式"
+        )
+        design_stack_parser.add_argument(
+            "stack",
+            help="技术栈名称 (Next.js, React, Vue, SvelteKit, etc.)"
+        )
+        design_stack_parser.add_argument(
+            "query",
+            nargs="?",
+            help="搜索查询（可选）"
+        )
+        design_stack_parser.add_argument(
+            "-c", "--category",
+            help="类别过滤 (architecture, performance, state_management, etc.)"
+        )
+        design_stack_parser.add_argument(
+            "--patterns",
+            action="store_true",
+            help="显示设计模式"
+        )
+        design_stack_parser.add_argument(
+            "--performance",
+            action="store_true",
+            help="显示性能优化建议"
+        )
+        design_stack_parser.add_argument(
+            "--quick-wins",
+            action="store_true",
+            help="显示快速见效的性能优化"
+        )
+        design_stack_parser.add_argument(
+            "-n", "--max-results",
+            type=int,
+            default=5,
+            help="最大结果数 (默认: 5)"
+        )
+        design_stack_parser.add_argument(
+            "--list",
+            action="store_true",
+            help="列出所有支持的技术栈"
+        )
+
+        # design codegen - 代码片段生成
+        design_codegen_parser = design_subparsers.add_parser(
+            "codegen",
+            help="代码片段生成",
+            description="生成多框架的 UI 组件代码片段"
+        )
+        design_codegen_parser.add_argument(
+            "component",
+            help="组件名称 (button, card, input, etc.)"
+        )
+        design_codegen_parser.add_argument(
+            "-f", "--framework",
+            choices=["react", "nextjs", "vue", "svelte", "html", "tailwind"],
+            default="react",
+            help="目标框架 (默认: react)"
+        )
+        design_codegen_parser.add_argument(
+            "-o", "--output",
+            help="输出文件路径"
+        )
+        design_codegen_parser.add_argument(
+            "--list",
+            action="store_true",
+            help="列出所有可用组件"
+        )
+        design_codegen_parser.add_argument(
+            "--search",
+            help="搜索组件"
+        )
+
         # spec 命令 - Spec-Driven Development
         spec_parser = subparsers.add_parser(
             "spec",
@@ -1414,9 +1490,223 @@ class SuperDevCLI:
             self.console.print()
             return 0
 
+        elif args.design_command == "stack":
+            # 技术栈最佳实践
+            from .design import get_tech_stack_engine
+
+            tech_engine = get_tech_stack_engine()
+
+            # 列出所有技术栈
+            if hasattr(args, 'list') and args.list:
+                stacks = tech_engine.list_stacks()
+                self.console.print(f"\n[green]支持的技术栈 ({len(stacks)} 个):[/green]\n")
+                for i, stack in enumerate(stacks, 1):
+                    self.console.print(f"  {i}. {stack}")
+                self.console.print()
+                return 0
+
+            # 查询参数
+            stack_name = args.stack
+            query = args.query if hasattr(args, 'query') and args.query else None
+            category = args.category if hasattr(args, 'category') else None
+
+            # 显示设计模式
+            if hasattr(args, 'patterns') and args.patterns:
+                patterns = tech_engine.get_patterns(stack_name)
+
+                if not patterns:
+                    self.console.print(f"[yellow]未找到 {stack_name} 的设计模式[/yellow]")
+                    return 1
+
+                self.console.print(f"\n[cyan]{stack_name} 设计模式 ({len(patterns)} 个):[/cyan]\n")
+
+                for idx, pattern in enumerate(patterns, 1):
+                    self.console.print(f"[cyan]{idx}. {pattern.name}[/cyan]")
+                    self.console.print(f"    描述: {pattern.description}")
+                    self.console.print(f"    使用场景: {pattern.use_case}")
+                    if pattern.pros:
+                        self.console.print(f"    优点: {', '.join(pattern.pros)}")
+                    if pattern.cons:
+                        self.console.print(f"    缺点: {', '.join(pattern.cons)}")
+                    self.console.print()
+
+                return 0
+
+            # 显示性能优化建议
+            if hasattr(args, 'performance') and args.performance:
+                tips = tech_engine.get_performance_tips(stack_name)
+
+                if not tips:
+                    self.console.print(f"[yellow]未找到 {stack_name} 的性能建议[/yellow]")
+                    return 1
+
+                self.console.print(f"\n[cyan]{stack_name} 性能优化建议 ({len(tips)} 个):[/cyan]\n")
+
+                for idx, tip in enumerate(tips, 1):
+                    self.console.print(f"[cyan]{idx}. {tip.topic} - {tip.technique}[/cyan]")
+                    self.console.print(f"    描述: {tip.description}")
+                    self.console.print(f"    影响: {tip.impact} | 实施难度: {tip.effort}")
+                    if tip.code_snippet:
+                        self.console.print(f"    代码示例:\n    [dim]{tip.code_snippet}[/dim]")
+                    self.console.print()
+
+                return 0
+
+            # 快速见效的性能优化
+            if hasattr(args, 'quick_wins') and args.quick_wins:
+                tips = tech_engine.get_quick_wins(stack_name)
+
+                if not tips:
+                    self.console.print(f"[yellow]未找到 {stack_name} 的快速性能优化[/yellow]")
+                    return 1
+
+                self.console.print(f"\n[cyan]{stack_name} 快速见效的性能优化 ({len(tips)} 个):[/cyan]\n")
+
+                for idx, tip in enumerate(tips, 1):
+                    self.console.print(f"[cyan]{idx}. {tip.topic} - {tip.technique}[/cyan]")
+                    self.console.print(f"    描述: {tip.description}")
+                    if tip.code_snippet:
+                        self.console.print(f"    代码示例:\n    [dim]{tip.code_snippet}[/dim]")
+                    self.console.print()
+
+                return 0
+
+            # 搜索最佳实践
+            self.console.print(f"[cyan]搜索 {stack_name} 最佳实践[/cyan]\n")
+
+            if query:
+                self.console.print(f"查询: {query}\n")
+
+            recommendations = tech_engine.search_practices(
+                stack=stack_name,
+                query=query,
+                category=category,
+                max_results=args.max_results
+            )
+
+            if not recommendations:
+                self.console.print("[yellow]未找到匹配的最佳实践[/yellow]")
+                return 1
+
+            for idx, rec in enumerate(recommendations, 1):
+                self.console.print(f"[cyan]{idx}. {rec.practice.topic}[/cyan] ({rec.practice.category.value})")
+                self.console.print(f"    [green]最佳实践:[/green] {rec.practice.practice}")
+                self.console.print(f"    [red]反模式:[/red] {rec.practice.anti_pattern}")
+                self.console.print(f"    好处: {rec.practice.benefits}")
+                self.console.print(f"    优先级: {rec.priority} | 复杂度: {rec.practice.complexity}")
+                if rec.context:
+                    self.console.print(f"    上下文: {rec.context}")
+                if rec.alternatives:
+                    self.console.print(f"    替代方案: {', '.join(rec.alternatives)}")
+                if rec.resources:
+                    self.console.print(f"    资源: {', '.join(rec.resources)}")
+                if rec.practice.code_example:
+                    self.console.print(f"    代码示例:\n    [dim]{rec.practice.code_example[:200]}...[/dim]")
+                self.console.print()
+
+            return 0
+
+        elif args.design_command == "codegen":
+            # 代码片段生成
+            from .design import get_code_generator
+            from .design.codegen import Framework
+
+            codegen = get_code_generator()
+
+            # 列出所有可用组件
+            if hasattr(args, 'list') and args.list:
+                components = codegen.get_available_components(
+                    framework=Framework(args.framework) if hasattr(args, 'framework') else None
+                )
+
+                self.console.print(f"\n[green]可用组件 ({args.framework or 'all'}):[/green]\n")
+
+                for category, comp_list in sorted(components.items()):
+                    self.console.print(f"[cyan]{category}:[/cyan]")
+                    for comp in comp_list:
+                        self.console.print(f"  - {comp}")
+                    self.console.print()
+
+                return 0
+
+            # 搜索组件
+            if hasattr(args, 'search') and args.search:
+                results = codegen.search_components(
+                    query=args.search,
+                    framework=args.framework if hasattr(args, 'framework') else None
+                )
+
+                if not results:
+                    self.console.print(f"[yellow]未找到匹配的组件: {args.search}[/yellow]")
+                    return 1
+
+                self.console.print(f"\n[green]找到 {len(results)} 个组件:[/green]\n")
+
+                for idx, snippet in enumerate(results, 1):
+                    self.console.print(f"[cyan]{idx}. {snippet.name}[/cyan] ({snippet.framework.value})")
+                    self.console.print(f"    类别: {snippet.category.value}")
+                    self.console.print(f"    描述: {snippet.description}")
+                    self.console.print(f"    依赖: {', '.join(snippet.dependencies)}")
+                    if snippet.preview:
+                        self.console.print(f"    预览: [dim]{snippet.preview}[/dim]")
+                    self.console.print()
+
+                return 0
+
+            # 生成组件代码
+            component_name = args.component
+            framework = args.framework if hasattr(args, 'framework') else "react"
+
+            self.console.print(f"[cyan]生成 {component_name} 组件 ({framework})[/cyan]\n")
+
+            component = codegen.generate_component(
+                component_name=component_name,
+                framework=Framework(framework)
+            )
+
+            if not component:
+                self.console.print(f"[yellow]未找到组件: {component_name}[/yellow]")
+                self.console.print(f"使用 --list 查看可用组件")
+                return 1
+
+            self.console.print(f"[green]组件名称:[/green] {component_name}")
+            self.console.print(f"[green]描述:[/green] {component.description}\n")
+
+            self.console.print(f"[cyan]代码:[/cyan]")
+            self.console.print(f"```{framework}")
+            self.console.print(component.code)
+            self.console.print("```\n")
+
+            if component.imports:
+                self.console.print(f"[cyan]导入语句:[/cyan]")
+                for imp in component.imports:
+                    self.console.print(f"  {imp}")
+                self.console.print()
+
+            if component.dependencies:
+                self.console.print(f"[cyan]依赖:[/cyan]")
+                self.console.print(f"  {', '.join(component.dependencies)}")
+                self.console.print()
+
+            if component.usage_example:
+                self.console.print(f"[cyan]使用示例:[/cyan]")
+                self.console.print(f"  [dim]{component.usage_example}[/dim]")
+
+            # 输出到文件
+            if hasattr(args, 'output') and args.output:
+                output_path = Path(args.output)
+                output_path.parent.mkdir(parents=True, exist_ok=True)
+
+                with open(output_path, 'w', encoding='utf-8') as f:
+                    f.write(component.code)
+
+                self.console.print(f"\n[green]已保存到: {output_path}[/green]")
+
+            return 0
+
         else:
             self.console.print("[yellow]请指定设计子命令[/yellow]")
-            self.console.print("  可用命令: search, generate, tokens, landing, chart, ux")
+            self.console.print("  可用命令: search, generate, tokens, landing, chart, ux, stack, codegen")
             self.console.print("  使用 'super-dev design <command> -h' 查看帮助")
             return 1
 
