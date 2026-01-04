@@ -414,6 +414,105 @@ class SuperDevCLI:
             help="输出文件路径"
         )
 
+        # design landing - Landing 页面模式
+        design_landing_parser = design_subparsers.add_parser(
+            "landing",
+            help="Landing 页面模式生成",
+            description="搜索和推荐 Landing 页面布局模式"
+        )
+        design_landing_parser.add_argument(
+            "query",
+            nargs="?",
+            help="搜索关键词（可选）"
+        )
+        design_landing_parser.add_argument(
+            "--product-type",
+            help="产品类型 (SaaS, E-commerce, Mobile, etc.)"
+        )
+        design_landing_parser.add_argument(
+            "--goal",
+            help="目标 (signup, purchase, demo, etc.)"
+        )
+        design_landing_parser.add_argument(
+            "--audience",
+            help="受众 (B2B, B2C, Enterprise, etc.)"
+        )
+        design_landing_parser.add_argument(
+            "-n", "--max-results",
+            type=int,
+            default=5,
+            help="最大结果数 (默认: 5)"
+        )
+        design_landing_parser.add_argument(
+            "--list",
+            action="store_true",
+            help="列出所有可用模式"
+        )
+
+        # design chart - 图表类型推荐
+        design_chart_parser = design_subparsers.add_parser(
+            "chart",
+            help="图表类型推荐",
+            description="根据数据类型推荐最佳图表类型"
+        )
+        design_chart_parser.add_argument(
+            "data_description",
+            help="数据描述（如 'time series sales data'）"
+        )
+        design_chart_parser.add_argument(
+            "-f", "--framework",
+            choices=["react", "vue", "svelte", "angular", "next", "vanilla"],
+            default="react",
+            help="前端框架 (默认: react)"
+        )
+        design_chart_parser.add_argument(
+            "-n", "--max-results",
+            type=int,
+            default=3,
+            help="最大结果数 (默认: 3)"
+        )
+        design_chart_parser.add_argument(
+            "--list",
+            action="store_true",
+            help="列出所有图表类型"
+        )
+
+        # design ux - UX 指南查询
+        design_ux_parser = design_subparsers.add_parser(
+            "ux",
+            help="UX 指南查询",
+            description="查询 UX 最佳实践和反模式"
+        )
+        design_ux_parser.add_argument(
+            "query",
+            help="搜索查询"
+        )
+        design_ux_parser.add_argument(
+            "-d", "--domain",
+            help="领域过滤 (Animation, A11y, Performance, etc.)"
+        )
+        design_ux_parser.add_argument(
+            "-n", "--max-results",
+            type=int,
+            default=5,
+            help="最大结果数 (默认: 5)"
+        )
+        design_ux_parser.add_argument(
+            "--quick-wins",
+            action="store_true",
+            help="显示快速见效的改进建议"
+        )
+        design_ux_parser.add_argument(
+            "--checklist",
+            action="store_true",
+            help="显示 UX 检查清单"
+        )
+        design_ux_parser.add_argument(
+            "--list-domains",
+            action="store_true",
+            help="列出所有领域"
+        )
+
         # spec 命令 - Spec-Driven Development
         spec_parser = subparsers.add_parser(
             "spec",
@@ -1100,9 +1199,224 @@ class SuperDevCLI:
 
             return 0
 
+        elif args.design_command == "landing":
+            # Landing 页面模式生成
+            from .design import get_landing_generator
+
+            landing_gen = get_landing_generator()
+
+            # 列出所有模式
+            if hasattr(args, 'list') and args.list:
+                patterns = landing_gen.list_patterns()
+                self.console.print(f"\n[green]可用的 Landing 页面模式 ({len(patterns)} 个):[/green]\n")
+                for i, pattern in enumerate(patterns, 1):
+                    self.console.print(f"  {i}. {pattern}")
+                self.console.print()
+                return 0
+
+            # 智能推荐
+            if hasattr(args, 'product_type') and args.product_type:
+                self.console.print(f"[cyan]智能推荐 Landing 页面模式[/cyan]")
+                self.console.print(f"  产品类型: {args.product_type}")
+                self.console.print(f"  目标: {args.goal if hasattr(args, 'goal') and args.goal else 'N/A'}")
+                self.console.print(f"  受众: {args.audience if hasattr(args, 'audience') and args.audience else 'N/A'}")
+                self.console.print()
+
+                recommended = landing_gen.recommend(
+                    product_type=args.product_type,
+                    goal=args.goal if hasattr(args, 'goal') and args.goal else "",
+                    audience=args.audience if hasattr(args, 'audience') and args.audience else ""
+                )
+
+                if recommended:
+                    self.console.print(f"[green]推荐模式: {recommended.name}[/green]")
+                    self.console.print(f"  {recommended.description}")
+                    self.console.print(f"  适合: {', '.join(recommended.best_for)}")
+                    self.console.print(f"  复杂度: {recommended.complexity}")
+                    self.console.print()
+                    return 0
+
+            # 搜索模式
+            query = args.query if hasattr(args, 'query') and args.query else ""
+            if query:
+                self.console.print(f"[cyan]搜索 Landing 页面模式: {query}[/cyan]\n")
+
+                results = landing_gen.search(query, max_results=args.max_results)
+
+                if not results:
+                    self.console.print("[yellow]未找到匹配的模式[/yellow]")
+                    return 1
+
+                self.console.print(f"[green]找到 {len(results)} 个结果:[/green]\n")
+
+                for idx, pattern in enumerate(results, 1):
+                    self.console.print(f"[cyan]{idx}. {pattern.name}[/cyan]")
+                    self.console.print(f"    {pattern.description}")
+                    self.console.print(f"    适合: {', '.join(pattern.best_for)}")
+                    self.console.print(f"    复杂度: {pattern.complexity}")
+                    self.console.print()
+
+                return 0
+
+            # 默认显示所有模式
+            patterns = landing_gen.list_patterns()
+            self.console.print(f"\n[green]可用的 Landing 页面模式 ({len(patterns)} 个):[/green]\n")
+            for i, pattern in enumerate(patterns, 1):
+                self.console.print(f"  {i}. {pattern}")
+            self.console.print()
+            return 0
+
+        elif args.design_command == "chart":
+            # 图表类型推荐
+            from .design import get_chart_recommender
+
+            chart_recommender = get_chart_recommender()
+
+            # 列出所有图表类型
+            if hasattr(args, 'list') and args.list:
+                chart_types = chart_recommender.list_chart_types()
+                categories = chart_recommender.list_categories()
+                self.console.print(f"\n[green]可用的图表类型 ({len(chart_types)} 个, {len(categories)} 个类别):[/green]\n")
+                for category in sorted(categories):
+                    types = [ct for ct in chart_types if ct in [c.name for c in chart_recommender.chart_types if c.category.value == category]]
+                    self.console.print(f"  [cyan]{category}:[/cyan]")
+                    for ct in sorted(types):
+                        self.console.print(f"    - {ct}")
+                self.console.print()
+                return 0
+
+            # 推荐图表类型
+            data_description = args.data_description if hasattr(args, 'data_description') else ""
+            if data_description:
+                self.console.print(f"[cyan]推荐图表类型[/cyan]")
+                self.console.print(f"  数据描述: {data_description}")
+                self.console.print(f"  框架: {args.framework}")
+                self.console.print()
+
+                recommendations = chart_recommender.recommend(
+                    data_description=data_description,
+                    framework=args.framework,
+                    max_results=args.max_results
+                )
+
+                if not recommendations:
+                    self.console.print("[yellow]未找到合适的图表类型[/yellow]")
+                    return 1
+
+                self.console.print(f"[green]推荐结果:[/green]\n")
+
+                for idx, rec in enumerate(recommendations, 1):
+                    confidence_pct = int(rec.confidence * 100)
+                    self.console.print(f"[cyan]{idx}. {rec.chart_type.name}[/cyan] (置信度: {confidence_pct}%)")
+                    self.console.print(f"    {rec.chart_type.description}")
+                    self.console.print(f"    理由: {rec.reasoning}")
+                    self.console.print(f"    推荐库: {rec.library_recommendation}")
+                    self.console.print(f"    无障碍: {rec.chart_type.accessibility_notes}")
+                    if rec.alternatives:
+                        self.console.print(f"    替代方案: {', '.join([a.name for a in rec.alternatives])}")
+                    self.console.print()
+
+                return 0
+
+            # 默认显示所有图表类型
+            chart_types = chart_recommender.list_chart_types()
+            self.console.print(f"\n[green]可用的图表类型 ({len(chart_types)} 个):[/green]\n")
+            for i, ct in enumerate(chart_types, 1):
+                self.console.print(f"  {i}. {ct}")
+            self.console.print()
+            return 0
+
+        elif args.design_command == "ux":
+            # UX 指南查询
+            from .design import get_ux_guide
+
+            ux_guide = get_ux_guide()
+
+            # 列出所有领域
+            if hasattr(args, 'list_domains') and args.list_domains:
+                domains = ux_guide.list_domains()
+                self.console.print(f"\n[green]UX 指南领域 ({len(domains)} 个):[/green]\n")
+                for i, domain in enumerate(domains, 1):
+                    self.console.print(f"  {i}. {domain}")
+                self.console.print()
+                return 0
+
+            # 快速见效的改进
+            if hasattr(args, 'quick_wins') and args.quick_wins:
+                self.console.print(f"[cyan]快速见效的 UX 改进建议[/cyan]\n")
+
+                quick_wins = ux_guide.get_quick_wins(max_results=args.max_results)
+
+                if not quick_wins:
+                    self.console.print("[yellow]未找到快速见效的建议[/yellow]")
+                    return 1
+
+                for idx, rec in enumerate(quick_wins, 1):
+                    self.console.print(f"[cyan]{idx}. {rec.guideline.topic}[/cyan] ({rec.guideline.domain.value})")
+                    self.console.print(f"    [green]最佳实践:[/green] {rec.guideline.best_practice}")
+                    self.console.print(f"    [red]反模式:[/red] {rec.guideline.anti_pattern}")
+                    self.console.print(f"    影响: {rec.guideline.impact}")
+                    self.console.print(f"    优先级: {rec.priority} | 实现难度: {rec.implementation_effort} | 用户影响: {rec.user_impact}")
+                    if rec.resources:
+                        self.console.print(f"    资源: {', '.join(rec.resources)}")
+                    self.console.print()
+
+                return 0
+
+            # 检查清单
+            if hasattr(args, 'checklist') and args.checklist:
+                self.console.print(f"[cyan]UX 检查清单[/cyan]\n")
+
+                checklist = ux_guide.get_checklist(domains=[args.domain] if hasattr(args, 'domain') and args.domain else None)
+
+                for domain, items in sorted(checklist.items()):
+                    self.console.print(f"[cyan]{domain}:[/cyan]")
+                    for item in items:
+                        self.console.print(f"  {item}")
+                    self.console.print()
+
+                return 0
+
+            # 搜索 UX 指南
+            query = args.query if hasattr(args, 'query') and args.query else ""
+            if query:
+                self.console.print(f"[cyan]搜索 UX 指南: {query}[/cyan]\n")
+
+                recommendations = ux_guide.search(
+                    query=query,
+                    domain=args.domain if hasattr(args, 'domain') else None,
+                    max_results=args.max_results
+                )
+
+                if not recommendations:
+                    self.console.print("[yellow]未找到匹配的 UX 指南[/yellow]")
+                    return 1
+
+                self.console.print(f"[green]找到 {len(recommendations)} 个结果:[/green]\n")
+
+                for idx, rec in enumerate(recommendations, 1):
+                    self.console.print(f"[cyan]{idx}. {rec.guideline.topic}[/cyan] ({rec.guideline.domain.value})")
+                    self.console.print(f"    [green]最佳实践:[/green] {rec.guideline.best_practice}")
+                    self.console.print(f"    [red]反模式:[/red] {rec.guideline.anti_pattern}")
+                    self.console.print(f"    影响: {rec.guideline.impact}")
+                    self.console.print(f"    优先级: {rec.priority} | 实现难度: {rec.implementation_effort} | 用户影响: {rec.user_impact}")
+                    if rec.resources:
+                        self.console.print(f"    资源: {', '.join(rec.resources)}")
+                    self.console.print()
+
+                return 0
+
+            # 默认显示所有领域
+            domains = ux_guide.list_domains()
+            self.console.print(f"\n[green]UX 指南领域 ({len(domains)} 个):[/green]\n")
+            for i, domain in enumerate(domains, 1):
+                self.console.print(f"  {i}. {domain}")
+            self.console.print()
+            return 0
+
         else:
             self.console.print("[yellow]请指定设计子命令[/yellow]")
-            self.console.print("  可用命令: search, generate, tokens")
+            self.console.print("  可用命令: search, generate, tokens, landing, chart, ux")
             self.console.print("  使用 'super-dev design <command> -h' 查看帮助")
             return 1
 
