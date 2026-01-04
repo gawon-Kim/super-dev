@@ -191,7 +191,7 @@ Super Dev 内置了类似 [OpenSpec](https://github.com/Fission-AI/OpenSpec) 的
 #### CI/CD 平台
 - GitHub Actions, GitLab CI, Jenkins, Azure DevOps, Bitbucket Pipelines
 
-### 7. 设计智能引擎 (超越 UI UX Pro Max)
+### 7. 设计智能引擎
 
 Super Dev 内置强大的设计智能引擎，提供从设计搜索到完整设计系统生成的端到端能力：
 
