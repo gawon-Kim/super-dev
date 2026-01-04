@@ -141,7 +141,9 @@ super-dev --version
 
 ## 发布到 PyPI（自动）
 
-### 配置 GitHub Actions
+### 配置 GitHub Actions（可选）
+
+**注意**：GitHub Actions 需要 `workflow` 权限才能创建/修改 workflow 文件。
 
 **文件：`.github/workflows/publish.yml`**
 
@@ -206,6 +208,8 @@ GitHub Actions 会自动：
 1. 构建包
 2. 发布到 PyPI
 3. 创建 GitHub Release
+
+**如果遇到权限错误**：请使用手动发布方式（见上文）
 
 ---
 
