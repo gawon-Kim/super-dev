@@ -1779,6 +1779,9 @@ class SuperDevCLI:
             self.console.print(f"  [green]✓[/green] UI/UX: {uiux_file}")
             self.console.print("")
 
+            # 保存技术栈到配置文件（供后续阶段使用）
+            self._save_tech_stack_to_config(project_dir, tech_stack, args.description)
+
             # ========== 第 2 阶段: 创建 Spec ==========
             self.console.print("[cyan]第 2 阶段: 创建 Spec 规范...[/cyan]")
             from .creators import SpecBuilder
@@ -2273,6 +2276,30 @@ class SuperDevCLI:
         return 0
 
     # ==================== 辅助方法 ====================
+
+    def _save_tech_stack_to_config(self, project_dir: Path, tech_stack: dict, description: str) -> None:
+        """保存技术栈到项目配置文件"""
+        import yaml
+        from pathlib import Path
+
+        config_file = project_dir / "super-dev.yaml"
+
+        # 读取现有配置（如果有）
+        config = {}
+        if config_file.exists():
+            with open(config_file, 'r', encoding='utf-8') as f:
+                config = yaml.safe_load(f) or {}
+
+        # 更新配置
+        config['platform'] = tech_stack.get('platform', 'web')
+        config['frontend'] = tech_stack.get('frontend', 'react')
+        config['backend'] = tech_stack.get('backend', 'node')
+        config['domain'] = tech_stack.get('domain', '')
+        config['description'] = description
+
+        # 保存配置
+        with open(config_file, 'w', encoding='utf-8') as f:
+            yaml.dump(config, f, allow_unicode=True, default_flow_style=False)
 
     def _print_banner(self) -> None:
         """打印欢迎横幅"""
