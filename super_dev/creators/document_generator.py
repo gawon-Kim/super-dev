@@ -88,6 +88,65 @@ class DocumentGenerator:
             "frontend": self.frontend,
         }
 
+    def _extract_tech_keywords(self) -> dict:
+        """
+        从描述中提取技术栈关键词
+
+        Returns:
+            dict: 包含提取的技术关键词分类
+        """
+        description = self.description
+        keywords = {
+            "ai_frameworks": [],      # AI 框架：LangGraph, LangChain, Transformers 等
+            "agent_tools": [],        # Agent 工具：AutoGPT, BabyAGI, CrewAI 等
+            "ml_libraries": [],       # ML 库：PyTorch, TensorFlow, scikit-learn 等
+            "vector_stores": [],      # 向量数据库：Pinecone, Chroma, Weaviate 等
+            "orchestration": [],      # 编排工具：Airflow, Prefect, Dagster 等
+            "other_keywords": [],     # 其他技术关键词
+        }
+
+        # AI 框架
+        ai_frameworks = ["LangGraph", "LangChain", "LlamaIndex", "Haystack", "Semantic Kernel"]
+        for framework in ai_frameworks:
+            if framework in description:
+                keywords["ai_frameworks"].append(framework)
+
+        # Agent 工具
+        agent_tools = ["AutoGPT", "BabyAGI", "CrewAI", "AgentOps", "E2B"]
+        for tool in agent_tools:
+            if tool in description:
+                keywords["agent_tools"].append(tool)
+
+        # ML 库
+        ml_libraries = ["PyTorch", "TensorFlow", "Keras", "scikit-learn", "XGBoost", "LightGBM"]
+        for lib in ml_libraries:
+            if lib in description:
+                keywords["ml_libraries"].append(lib)
+
+        # 向量数据库
+        vector_stores = ["Pinecone", "Chroma", "Weaviate", "Qdrant", "Milvus", "FAISS"]
+        for store in vector_stores:
+            if store in description:
+                keywords["vector_stores"].append(store)
+
+        # 编排工具
+        orchestration = ["Airflow", "Prefect", "Dagster", "Argo Workflows", "Temporal"]
+        for tool in orchestration:
+            if tool in description:
+                keywords["orchestration"].append(tool)
+
+        # 提取 Agent 相关关键词
+        if "Agent" in description or "agent" in description or "智能体" in description:
+            keywords["other_keywords"].append("Multi-Agent System")
+
+        if "RAG" in description or "检索增强" in description:
+            keywords["other_keywords"].append("RAG (Retrieval-Augmented Generation)")
+
+        if "LLM" in description or "大语言模型" in description or "GPT" in description:
+            keywords["other_keywords"].append("LLM Integration")
+
+        return keywords
+
 
     def generate_prd(self) -> str:
         """生成高质量 PRD 文档"""
@@ -337,6 +396,8 @@ class DocumentGenerator:
 | **认证** | JWT | Token 认证 |
 | **ORM** | {self._get_orm()} | 数据库 ORM |
 | **验证** | Joi/Zod | 数据验证 |
+
+{self._generate_ai_ml_stack()}
 
 ### 2.3 数据存储
 
@@ -1152,6 +1213,59 @@ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica
     def _get_file_storage(self) -> str:
         """获取文件存储"""
         return "AWS S3 / 阿里云 OSS"
+
+    def _generate_ai_ml_stack(self) -> str:
+        """生成 AI/ML 技术栈部分"""
+        keywords = self._extract_tech_keywords()
+
+        # 检查是否有任何 AI/ML 相关技术
+        has_ai_content = any([
+            keywords["ai_frameworks"],
+            keywords["agent_tools"],
+            keywords["ml_libraries"],
+            keywords["vector_stores"],
+            keywords["orchestration"],
+            keywords["other_keywords"],
+        ])
+
+        if not has_ai_content:
+            return ""  # 如果没有 AI/ML 内容，返回空字符串
+
+        # 构建 AI/ML 技术栈部分
+        lines = ["### 2.2.1 AI/ML 技术栈", "", "| 层级 | 技术选型 | 说明 |", "|:---|:---|:---|"]
+
+        # AI 框架
+        if keywords["ai_frameworks"]:
+            for framework in keywords["ai_frameworks"]:
+                lines.append(f"| **AI 框架** | {framework} | Agent 编排与开发 |")
+
+        # Agent 工具
+        if keywords["agent_tools"]:
+            for tool in keywords["agent_tools"]:
+                lines.append(f"| **Agent 工具** | {tool} | Agent 构建与管理 |")
+
+        # ML 库
+        if keywords["ml_libraries"]:
+            for lib in keywords["ml_libraries"]:
+                lines.append(f"| **ML 库** | {lib} | 机器学习模型 |")
+
+        # 向量数据库
+        if keywords["vector_stores"]:
+            for store in keywords["vector_stores"]:
+                lines.append(f"| **向量数据库** | {store} | 向量存储与检索 |")
+
+        # 编排工具
+        if keywords["orchestration"]:
+            for tool in keywords["orchestration"]:
+                lines.append(f"| **编排工具** | {tool} | 工作流编排 |")
+
+        # 其他关键词
+        if keywords["other_keywords"]:
+            for keyword in keywords["other_keywords"]:
+                lines.append(f"| **核心能力** | {keyword} | 关键技术特性 |")
+
+        lines.append("")
+        return "\n".join(lines)
 
     def _generate_vision(self) -> str:
         """生成产品愿景"""
