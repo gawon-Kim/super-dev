@@ -1309,23 +1309,115 @@ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica
 
     def _generate_core_features(self) -> str:
         """生成核心功能"""
-        # 这里需要根据描述智能生成功能列表
-        return """
-1. **用户认证**
-   - 注册/登录
+        # 从描述中提取业务领域关键词
+        description_lower = self.description.lower()
+        keywords = self._extract_tech_keywords()
+
+        # 基础功能（所有应用都有）
+        base_features = """
+1. **用户认证与授权**
+   - 注册/登录（邮箱/手机号）
    - 密码重置
-   - 第三方登录 (可选)
+   - JWT Token 认证
+   - 第三方登录（可选）
 
-2. **用户管理**
-   - 个人资料
-   - 账户设置
-   - 偏好设置
-
-3. **核心业务功能**
-   - [根据具体描述生成]
-   - CRUD 操作
-   - 搜索过滤
+2. **用户中心**
+   - 个人资料管理
+   - 账户安全设置
+   - 偏好配置
 """
+
+        # 根据业务领域生成核心功能
+        business_features = ""
+
+        # 求职招聘领域
+        if any(word in description_lower for word in ["求职", "招聘", "job", "resume", "career", "简历", "职位"]):
+            business_features = """
+3. **简历管理**
+   - 在线简历创建与编辑
+   - 简历模板选择
+   - 简历导入（上传 PDF/Word）
+   - 简历预览与导出
+   - 简历智能评分与优化建议
+
+4. **职位搜索与推荐**
+   - 职位搜索（关键词/地点/薪资）
+   - 智能职位推荐
+   - 职位收藏与对比
+   - 职位订阅通知
+
+5. **求职助手"""
+            # 如果有 AI/Agent 相关技术，添加智能功能
+            if keywords["ai_frameworks"] or keywords["agent_tools"] or "Multi-Agent System" in keywords["other_keywords"]:
+                business_features += """
+   - 多 Agent 智能求职助手：
+     * **简历优化 Agent**: 自动优化简历内容，提高匹配度
+     * **职位推荐 Agent**: 基于用户画像智能推荐职位
+     * **面试准备 Agent**: 模拟面试，提供问题预测和回答建议
+     * **薪资谈判 Agent**: 分析市场薪资，提供谈判策略
+     * **职业规划 Agent**: 基于行业趋势提供职业发展建议
+   - 实时对话式求职咨询
+   - 智能简历投递建议"""
+            else:
+                business_features += """
+   - 求职进度跟踪
+   - 面试提醒与日程管理
+   - 求职数据分析"""
+
+        # 电商领域
+        elif any(word in description_lower for word in ["电商", "商城", "shop", "store", "mall", "购物"]):
+            business_features = """
+3. **商品管理**
+   - 商品浏览与搜索
+   - 商品分类与筛选
+   - 商品详情与评价
+
+4. **购物车与订单**
+   - 购物车管理
+   - 订单创建与支付
+   - 物流跟踪
+
+5. **用户中心**
+   - 收藏夹
+   - 浏览历史
+   - 优惠券管理"""
+
+        # 内容/社区领域
+        elif any(word in description_lower for word in ["内容", "社区", "content", "community", "blog", "forum", "社交"]):
+            business_features = """
+3. **内容管理**
+   - 内容发布与编辑
+   - 富文本支持
+   - 图片/视频上传
+
+4. **社交互动**
+   - 点赞/评论/分享
+   - 关注作者
+   - 消息通知"""
+
+        # 教育领域
+        elif any(word in description_lower for word in ["教育", "培训", "education", "learning", "课程", "学习"]):
+            business_features = """
+3. **课程管理**
+   - 课程浏览与购买
+   - 课程进度跟踪
+   - 学习笔记
+
+4. **学习互动**
+   - 问答讨论
+   - 作业提交
+   - 在线测试"""
+
+        # 通用默认
+        else:
+            business_features = f"""
+3. **核心业务功能**
+   - {self.description}
+   - 数据管理与展示
+   - 搜索与过滤
+   - 数据导入/导出"""
+
+        return base_features + business_features
 
     def _generate_extended_features(self) -> str:
         """生成扩展功能"""
